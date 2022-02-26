@@ -1,0 +1,5 @@
+.DS_Store
+gulpOut.js
+node_modules
+*.pyc
+*.blend?*
