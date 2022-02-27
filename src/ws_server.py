@@ -1,4 +1,5 @@
 import threading
+import json
 
 from wsgiref.simple_server import make_server
 from ws4py.websocket import WebSocket as _WebSocket
@@ -12,11 +13,9 @@ class WebSocketApp(_WebSocket):
     global sockets
     
     def opened(self):
-        print( 'open' )
         sockets.append(self)
         
     def closed(self, code, reason=None):
-        print( 'close' )
         sockets.remove(self)
         
     def received_message(self, message):
