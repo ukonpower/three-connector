@@ -1,69 +1,55 @@
 import threading
 import json
+import inspect
 
-from wsgiref.simple_server import make_server
-from ws4py.websocket import WebSocket as _WebSocket
-from ws4py.server.wsgirefserver import WSGIServer, WebSocketWSGIRequestHandler
-from ws4py.server.wsgiutils import WebSocketWSGIApplication
+from websocket_server import WebsocketServer
 
-sockets = []
-
-class WebSocketApp(_WebSocket):
-
-    global sockets
-    
-    def opened(self):
-        sockets.append(self)
-        
-    def closed(self, code, reason=None):
-        sockets.remove(self)
-        
-    def received_message(self, message):
-        data = json.loads(message.data.decode(message.encoding))
+clients = []
 
 class WS:
 
-    global sockets
+    global clients
 
     def __init__(self):
-        self.wserver = None
+        self.server = None
+    
+    def new_client(self, client, server):
+        print('open')
+        clients.append(client)
+
+    def client_left(self, client, server):
+        print('close')
+
+    def message_received(self, client, server, message):
+        print('receive')
     
     def start_server(self, host, port):
         
-        if self.wserver:
+        if self.server:
             return False
         
-        self.wserver = make_server(host, port,
-            server_class=WSGIServer,
-            handler_class=WebSocketWSGIRequestHandler,
-            app=WebSocketWSGIApplication(handler_cls=WebSocketApp)
-        )
-        self.wserver.initialize_websockets_manager()
-        
-        self.wserver_thread = threading.Thread(target=self.wserver.serve_forever)
-        self.wserver_thread.daemon = True
-        self.wserver_thread.start()
+        self.server = WebsocketServer(host, port)
+        self.server.set_fn_new_client(self.new_client)
+        self.server.set_fn_client_left(self.client_left)
+        self.server.set_fn_message_received(self.message_received) 
+        self.wserver_thread = self.server.run_forever(True)
 
         return True
 
     def stop_server(self):
-        if not self.wserver:
+        if not self.server:
             return False
 
-        # clear sockets
-        for socket in sockets:
-            socket.close()
-                
-        sockets.clear()
-
         # shutdown server
-        self.wserver.shutdown()
-        self.wserver_thread.join()
-        self.wserver = None
+        self.server.shutdown_gracefully()
+        self.server = None
+
+        # clear clients
+        clients.clear()
         
         return True
     
     def broadcast(self, message):
-        for socket in sockets:
-            socket.send(message)
+        for client in clients:
+            self.server.send_message(client, message)
 

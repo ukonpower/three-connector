@@ -5,6 +5,7 @@ else:
     from .ws_server import WS;
 
 import bpy
+import atexit
 
 class THREECONNECTOR_PT_Sync(bpy.types.Panel):
 
@@ -37,7 +38,6 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     
     def on_change_frame(self, scene, any ):
         cls = THREECONNECTOR_OT_Sync
-
         cls.ws.broadcast(str(scene.frame_current))
 
     def start(self):
@@ -67,3 +67,8 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls = THREECONNECTOR_OT_Sync
         cls.ws.stop_server()
         cls.running = False
+
+@atexit.register
+def on_exit():
+    cls = THREECONNECTOR_OT_Sync
+    cls.ws.stop_server()
