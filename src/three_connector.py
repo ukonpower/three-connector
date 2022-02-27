@@ -72,3 +72,4 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
 def on_exit():
     cls = THREECONNECTOR_OT_Sync
     cls.ws.stop_server()
+    cls.running = False

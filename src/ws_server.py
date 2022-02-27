@@ -32,7 +32,7 @@ class WS:
         if self.server:
             return False
         
-        self.server = WebsocketServer(host, port, loglevel=logging.INFO)
+        self.server = WebsocketServer(host, port)
         self.server.set_fn_new_client(self.new_client)
         self.server.set_fn_client_left(self.client_left)
         self.server.set_fn_message_received(self.message_received) 
@@ -45,8 +45,9 @@ class WS:
             return False
 
         # shutdown server
-        self.server.shutdown_abruptly()
+        # self.server.shutdown_gracefully()
         self.server = None
+        self.wserver_thread = None
 
         # clear clients
         clients.clear()
