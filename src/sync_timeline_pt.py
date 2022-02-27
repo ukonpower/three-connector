@@ -15,9 +15,8 @@ class THREECONNECTOR_PT_SyncTimeLine(bpy.types.Panel):
 
     def draw(self, context):
         op_cls = THREECONNECTOR_OT_SyncTimeLine
-
+        
         layout = self.layout
-        # [開始] / [停止] ボタンを追加
         if not op_cls.is_running():
             layout.operator(op_cls.bl_idname, text="開始", icon="PLAY")
         else:

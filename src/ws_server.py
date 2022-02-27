@@ -8,11 +8,12 @@ from ws4py.server.wsgiutils import WebSocketWSGIApplication
 sockets = []
 
 class WebSocketApp(_WebSocket):
+
+    global sockets
+    
     def opened(self):
         print( 'open' )
         sockets.append(self)
-        # send_state([self])
-        # sockets.append(self)
         
     def closed(self, code, reason=None):
         print( 'close' )
@@ -20,12 +21,10 @@ class WebSocketApp(_WebSocket):
         
     def received_message(self, message):
         data = json.loads(message.data.decode(message.encoding))
-        print( data )
-        # message_queue.put(data)
-
 
 class WS:
-    # __sockets = []
+
+    global sockets
 
     def __init__(self):
         self.wserver = None
@@ -45,18 +44,27 @@ class WS:
         self.wserver_thread = threading.Thread(target=self.wserver.serve_forever)
         self.wserver_thread.daemon = True
         self.wserver_thread.start()
-        
+
         return True
 
     def stop_server(self):
         if not self.wserver:
             return False
-            
-        self.wserver.shutdown()
 
+        # clear sockets
         for socket in sockets:
             socket.close()
-            
+                
+        sockets.clear()
+
+        # shutdown server
+        self.wserver.shutdown()
+        self.wserver_thread.join()
         self.wserver = None
         
         return True
+    
+    def broadcast(self, message):
+        for socket in sockets:
+            socket.send(message)
+

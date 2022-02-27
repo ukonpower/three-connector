@@ -6,34 +6,39 @@ else:
 
 import bpy
 
-ws = WS()
-
 class THREECONNECTOR_OT_SyncTimeLine(bpy.types.Operator):
 
     bl_idname = "object.threeconnector_timeline"
     bl_label = "タイムラインを同期"
     bl_description = "タイムラインをwebsocketで送信します。"
     
-    __running = False
+    running = False
+    ws = WS()
 
     @classmethod
     def is_running(cls):
-        return cls.__running
+        return cls.running
     
     def on_change_frame(self, scene, any ):
-        print("Frame Change", scene.frame_current)
+        cls = THREECONNECTOR_OT_SyncTimeLine
+        cls.ws.broadcast(str(scene.frame_current))
         
     def invoke(self, context, event):
-        op_cls = THREECONNECTOR_OT_SyncTimeLine
+        cls = THREECONNECTOR_OT_SyncTimeLine
         
         bpy.app.handlers.frame_change_pre.clear()
         
-        if( op_cls.is_running() ):
-            ws.stop_server()
-            op_cls.__running = False
+        if( cls.is_running() ):
+            cls.ws.stop_server()
+            cls.running = False
         else:
-            ws.start_server('localhost', 3100)
+            cls.ws.start_server('localhost', 3100)
             bpy.app.handlers.frame_change_pre.append(self.on_change_frame)
-            op_cls.__running = True
+            cls.running = True
 
         return {'FINISHED'}
+
+    def unregister():
+        cls = THREECONNECTOR_OT_SyncTimeLine
+        cls.ws.stop_server()
+        cls.running = False

@@ -9,10 +9,6 @@ bl_info = {
     "category" : "Generic"
 }
 
-# if "bpy" in locals():
-#     import imp
-#     imp.reload(auto_load)
-# else:
 from . import auto_load
 
 auto_load.init()
