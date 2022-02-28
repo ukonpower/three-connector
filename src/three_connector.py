@@ -6,6 +6,7 @@ else:
 
 import bpy
 import atexit
+import asyncio
 
 class THREECONNECTOR_PT_Sync(bpy.types.Panel):
 

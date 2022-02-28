@@ -2,10 +2,10 @@ import threading
 import json
 import inspect
 
-import logging
-from websocket_server import WebsocketServer
+import websockets
+import asyncio
 
-clients = []
+clients = set()
 
 class WS:
 
@@ -13,48 +13,56 @@ class WS:
 
     def __init__(self):
         self.server = None
+        self.server_stop = None
+        self.server_thread = None
     
-    def new_client(self, client, server):
-        clients.append(client)
+    async def handler(self,websocket):
+        try:
+            clients.add(websocket)
+        finally:
+            clients.remove(websocket)
 
-    def client_left(self, client, server):
-        l = len(clients)
-        for i in range(l):
-            index = l - i - 1
-            cli = clients[index]
-            if(cli["id"] == client["id"]):
-                del clients[index]
+    async def ws_server(self, host, port):
+        loop = asyncio.get_running_loop()
+        self.server_stop = loop.create_future()
+        
+        async with websockets.serve(self.handler, host, port):
+            result = await self.server_stop
+            print(result)
+            print('finiiiiiish')
+        
 
-    def message_received(self, client, server, message):
-        print('receive')
-    
+    def run_server(self, host, port):
+        asyncio.run(self.ws_server(host,port))
+
     def start_server(self, host, port):
         if self.server:
             return False
-        
-        self.server = WebsocketServer(host, port)
-        self.server.set_fn_new_client(self.new_client)
-        self.server.set_fn_client_left(self.client_left)
-        self.server.set_fn_message_received(self.message_received) 
-        self.wserver_thread = self.server.run_forever(True)
-
-        return True
-
+            
+        self.server_thread = threading.Thread(target=self.run_server, args=(host,port))
+        self.server_thread.setDaemon(True)
+        self.server_thread.start()
+            
     def stop_server(self):
-        if not self.server:
-            return False
+        
+        # if not self.server:
+        #     return False
 
         # shutdown server
-        # self.server.shutdown_gracefully()
+        if self.server_stop:
+            self.server_stop.set_result(True)
+
         self.server = None
         self.wserver_thread = None
 
         # clear clients
-        clients.clear()
+        # clients.clear()
         
         return True
     
     def broadcast(self, message):
-        for client in clients:
-            self.server.send_message(client, message)
+        if not self.server:
+            return
 
+        for client in clients:
+            client.send(message)
