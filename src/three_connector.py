@@ -4,6 +4,7 @@ if "bpy" in locals():
 else:
     from .ws_server import WS;
 
+import json
 import bpy
 import atexit
 import asyncio
@@ -37,9 +38,17 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     def is_running(cls):
         return cls.running
     
-    def on_change_frame(self, scene, any ):
+    def on_change_frame(self, scene: bpy.types.Scene, any ):
         cls = THREECONNECTOR_OT_Sync
-        cls.ws.broadcast(str(scene.frame_current))
+
+        frameData = {
+            'start': scene.frame_start,
+            'end': scene.frame_end,
+            'current': scene.frame_current
+        }
+        
+        cls.ws.broadcast(frameData)
+
 
     def start(self):
         cls = THREECONNECTOR_OT_Sync
@@ -52,7 +61,7 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls.ws.stop_server()
         cls.running = False
 
-    def execute(self, context):
+    def execute(self, context: bpy.types.Context):
         cls = THREECONNECTOR_OT_Sync
         
         bpy.app.handlers.frame_change_pre.clear()

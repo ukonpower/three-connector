@@ -66,4 +66,6 @@ class WS:
         if not self.server:
             return
 
-        websockets.broadcast(self.sockets, message)
+        messageStr = json.dumps(message)
+
+        websockets.broadcast(self.sockets, messageStr)
