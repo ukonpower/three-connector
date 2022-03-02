@@ -43,7 +43,7 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
 
     def start(self):
         cls = THREECONNECTOR_OT_Sync
-        cls.ws.start_server('localhost', 3200)
+        cls.ws.start_server('localhost', 3100)
         cls.running = True
         bpy.app.handlers.frame_change_pre.append(self.on_change_frame)
             

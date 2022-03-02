@@ -1,26 +1,29 @@
 import threading
 import json
 import inspect
-
-import websockets
 import asyncio
 
-clients = set()
+import websockets
 
 class WS:
-
-    global clients
 
     def __init__(self):
         self.server = None
         self.server_stop = None
         self.server_thread = None
+        self.sockets = set()
+    
+    async def clientEvents(self, websocket ):
+        async for message in websocket:
+            print( message )
     
     async def handler(self,websocket):
+        self.sockets.add(websocket)
+        
         try:
-            clients.add(websocket)
+            await self.clientEvents(websocket)
         finally:
-            clients.remove(websocket)
+            self.sockets.remove(websocket)
 
     async def ws_server(self, host, port):
 
@@ -54,15 +57,13 @@ class WS:
 
         self.server = None
         self.wserver_thread = None
+        self.serverLoop = None
+        self.server_stop = None
 
-        # clear clients
-        clients.clear()
-        
         return True
     
     def broadcast(self, message):
         if not self.server:
             return
 
-        for client in clients:
-            client.send(message)
+        websockets.broadcast(self.sockets, message)
