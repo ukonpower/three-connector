@@ -23,13 +23,13 @@ class WS:
             clients.remove(websocket)
 
     async def ws_server(self, host, port):
-        loop = asyncio.get_running_loop()
-        self.server_stop = loop.create_future()
-        
-        async with websockets.serve(self.handler, host, port):
-            result = await self.server_stop
-            print(result)
-            print('finiiiiiish')
+
+        self.serverLoop = asyncio.get_running_loop()
+        self.serverStop = self.serverLoop.create_future()
+
+        async with websockets.serve(self.handler, host, port) as server :
+            self.server = server
+            await self.serverStop
         
 
     def run_server(self, host, port):
@@ -45,18 +45,18 @@ class WS:
             
     def stop_server(self):
         
-        # if not self.server:
-        #     return False
+        if not self.server:
+            return False
 
         # shutdown server
-        if self.server_stop:
-            self.server_stop.set_result(True)
+        if self.serverLoop and self.serverStop:
+            self.serverLoop.call_soon_threadsafe(self.serverStop.set_result, 1)
 
         self.server = None
         self.wserver_thread = None
 
         # clear clients
-        # clients.clear()
+        clients.clear()
         
         return True
     
