@@ -1,13 +1,8 @@
-if "bpy" in locals():
-    import imp
-    imp.reload(WS)
-else:
-    from .ws_server import WS;
-
-import json
+from this import d
 import bpy
-import atexit
-import asyncio
+
+from .ws_server import WS;
+from src.animation_parser import AnimationParser
 
 class THREECONNECTOR_PT_Sync(bpy.types.Panel):
 
@@ -38,6 +33,17 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     def is_running(cls):
         return cls.running
     
+    @classmethod
+    def register(cls):
+        print('register')
+
+    @classmethod
+    def unregister(cls):
+        print('unregister')
+        cls.ws.stop_server()
+        cls.running = False
+        bpy.app.handlers.save_pre.clear()
+    
     def on_change_frame(self, scene: bpy.types.Scene, any ):
         cls = THREECONNECTOR_OT_Sync
 
@@ -48,13 +54,18 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         }
         
         cls.ws.broadcast(frameData)
-
+    
+    def on_save(self, scene: bpy.types.Scene ):
+        parser = AnimationParser()
+        parser.get_animation_date()
 
     def start(self):
         cls = THREECONNECTOR_OT_Sync
         cls.ws.start_server('localhost', 3100)
         cls.running = True
+        
         bpy.app.handlers.frame_change_pre.append(self.on_change_frame)
+        bpy.app.handlers.save_pre.append(cls.on_save)
             
     def stop(self):
         cls = THREECONNECTOR_OT_Sync
@@ -63,8 +74,9 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         cls = THREECONNECTOR_OT_Sync
-        
+
         bpy.app.handlers.frame_change_pre.clear()
+        bpy.app.handlers.save_pre.clear()
         
         if( cls.is_running() ):
             self.stop()
@@ -72,14 +84,3 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
             self.start()
 
         return {'FINISHED'}
-
-    def unregister():
-        cls = THREECONNECTOR_OT_Sync
-        cls.ws.stop_server()
-        cls.running = False
-
-@atexit.register
-def on_exit():
-    cls = THREECONNECTOR_OT_Sync
-    cls.ws.stop_server()
-    cls.running = False
