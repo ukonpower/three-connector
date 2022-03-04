@@ -56,8 +56,10 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls.ws.broadcast(frameData)
     
     def on_save(self, scene: bpy.types.Scene ):
+        cls = THREECONNECTOR_OT_Sync
         parser = AnimationParser()
-        parser.get_animation_date()
+        animationData = parser.get_animation_date()
+        cls.ws.broadcast(animationData)
 
     def start(self):
         cls = THREECONNECTOR_OT_Sync

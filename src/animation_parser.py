@@ -4,6 +4,19 @@ class AnimationParser:
 
     # parse ----------------------
 
+    def parse_vector(self, vector):
+        parsed_vector = {}
+        if hasattr( vector,"x" ):
+            parsed_vector["x"] = vector.x
+        if hasattr( vector,"y" ):
+            parsed_vector["y"] = vector.y
+        if hasattr( vector,"z" ):
+            parsed_vector["z"] = vector.z
+        if hasattr( vector,"w" ):
+            parsed_vector["w"] = vector.w
+            
+        return parsed_vector
+
     def get_fcurve_name(self, fcurve: bpy.types.FCurve ):
         items = "xyzw"
         index = fcurve.array_index
@@ -15,9 +28,9 @@ class AnimationParser:
 
     def parse_keyframe(self, keyframe: bpy.types.Keyframe):
         parsed_keyframe = {
-                "c": keyframe.co,
-                "h_l": keyframe.handle_left,
-                "h_r": keyframe.handle_right,
+                "c": self.parse_vector(keyframe.co),
+                "h_l": self.parse_vector(keyframe.handle_left),
+                "h_r": self.parse_vector(keyframe.handle_right),
                 "e": keyframe.easing,
                 "i": keyframe.interpolation
         }
@@ -36,11 +49,12 @@ class AnimationParser:
     def parse_keyframe_list(self, keyframes: list[bpy.types.Keyframe]):
         parsed_keyframes = []
         for keyframe in keyframes:
-            parsed_keyframes.append(self.parse_keyframe_list(keyframe))
+            parsed_keyframes.append(self.parse_keyframe(keyframe))
+        return parsed_keyframes
 
     def parse_action(self, action: bpy.types.Action ):
         action_parsed = {
-            "name": action.name,
+            "name": action.name_full,
             "curves": self.parse_fcurves_list(action.fcurves)
         }
         return action_parsed
@@ -60,11 +74,33 @@ class AnimationParser:
 
         return parsed_actions
 
+    #  Objects ----------------------
+
+    def paser_object_list(self, objects:list[bpy.types.Object]):
+        objects = bpy.data.objects
+
+        parsed_objects = []
+
+        for object in objects:
+            object_data = {
+                "name": object,
+                "animation": None
+            }
+
+            animation_data = object.animation_data
+            
+            if animation_data:
+                object_data["animation"] = {
+                    "action": animation_data.action.name_full
+                }
+
+        return parsed_objects
+
     #  API ----------------------
 
     def get_animation_date(self):
         animation_data = {
-            "actions": self.parse_action_list(bpy.data.actions)
+            "actions": self.parse_action_list(bpy.data.actions),
+            "objects": self.paser_object_list(bpy.data.objects)
         }
-        
         return animation_data
