@@ -7,11 +7,13 @@ import websockets
 
 class WS:
 
+
     def __init__(self):
         self.server = None
         self.server_stop = None
         self.server_thread = None
         self.sockets = set()
+        self.on_connect = None
     
     async def clientEvents(self, websocket ):
         async for message in websocket:
@@ -19,6 +21,9 @@ class WS:
     
     async def handler(self,websocket):
         self.sockets.add(websocket)
+
+        if self.on_connect:
+            await self.on_connect(websocket)
         
         try:
             await self.clientEvents(websocket)
@@ -62,10 +67,25 @@ class WS:
 
         return True
     
-    def broadcast(self, message):
+    async def send(self, websocket, type, data):
+        if( not self.server ):
+            return
+
+        messageStr = json.dumps({
+            "type": type,
+            "data": data
+        })
+
+        await websocket.send(messageStr)
+
+    
+    def broadcast(self, type, data):
         if not self.server:
             return
 
-        messageStr = json.dumps(message)
+        messageStr = json.dumps({
+            "type": type,
+            "data": data
+        })
 
         websockets.broadcast(self.sockets, messageStr)

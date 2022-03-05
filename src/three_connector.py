@@ -43,30 +43,43 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls.ws.stop_server()
         cls.running = False
         bpy.app.handlers.save_pre.clear()
-    
-    def on_change_frame(self, scene: bpy.types.Scene, any ):
-        cls = THREECONNECTOR_OT_Sync
 
-        frameData = {
+    @classmethod
+    def get_frame(cls):
+        scene = bpy.context.scene
+        return {
             'start': scene.frame_start,
             'end': scene.frame_end,
             'current': scene.frame_current
         }
-        
-        cls.ws.broadcast(frameData)
-    
-    def on_save(self, scene: bpy.types.Scene ):
-        cls = THREECONNECTOR_OT_Sync
-        parser = AnimationParser()
-        animationData = parser.get_animation_date()
-        cls.ws.broadcast(animationData)
 
+    @classmethod
+    def get_animation(cls):
+        return AnimationParser().get_animation_date()
+
+    @classmethod
+    def on_change_frame(cls, scene: bpy.types.Scene, any ):
+        frame_data = cls.get_frame()
+        cls.ws.broadcast("sync/frame", frame_data)
+
+    @classmethod
+    def on_save(cls, scene: bpy.types.Scene ):
+        animation_data = cls.get_animation()
+        cls.ws.broadcast("sync/animation", animation_data)
+
+    @classmethod
+    async def on_connect(cls, websocket):
+        frame_data = cls.get_frame()
+        animation_data = cls.get_animation()
+        await cls.ws.send(websocket, "sync/frame", frame_data)
+        await cls.ws.send(websocket, "sync/animation", animation_data)
+        
     def start(self):
         cls = THREECONNECTOR_OT_Sync
         cls.ws.start_server('localhost', 3100)
         cls.running = True
         
-        bpy.app.handlers.frame_change_pre.append(self.on_change_frame)
+        bpy.app.handlers.frame_change_pre.append(cls.on_change_frame)
         bpy.app.handlers.save_pre.append(cls.on_save)
             
     def stop(self):
@@ -76,10 +89,11 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
 
     def execute(self, context: bpy.types.Context):
         cls = THREECONNECTOR_OT_Sync
-
         bpy.app.handlers.frame_change_pre.clear()
         bpy.app.handlers.save_pre.clear()
-        
+
+        cls.ws.on_connect = cls.on_connect
+
         if( cls.is_running() ):
             self.stop()
         else:
