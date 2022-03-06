@@ -29,6 +29,9 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     ws = WS()
     running = False
 
+    # frame
+    sended_frame = None
+
     @classmethod
     def is_running(cls):
         return cls.running
@@ -60,10 +63,12 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     @classmethod
     def on_change_frame(cls, scene: bpy.types.Scene, any ):
         frame_data = cls.get_frame()
-        cls.ws.broadcast("sync/frame", frame_data)
+        if frame_data["current"] != cls.sended_frame:
+            cls.ws.broadcast("sync/frame", frame_data)
+            cls.sended_frame = frame_data["current"]
 
     @classmethod
-    def on_save(cls, scene: bpy.types.Scene ):
+    def on_save(cls, scene: bpy.types.Scene, any ):
         animation_data = cls.get_animation()
         cls.ws.broadcast("sync/animation", animation_data)
 

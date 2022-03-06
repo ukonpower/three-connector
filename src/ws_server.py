@@ -35,7 +35,7 @@ class WS:
         self.serverLoop = asyncio.get_running_loop()
         self.serverStop = self.serverLoop.create_future()
 
-        async with websockets.serve(self.handler, host, port) as server :
+        async with websockets.serve(self.handler, host, port, compression=None) as server :
             self.server = server
             await self.serverStop
         
@@ -88,4 +88,7 @@ class WS:
             "data": data
         })
 
+        # print( messageStr)
         websockets.broadcast(self.sockets, messageStr)
+
+        
