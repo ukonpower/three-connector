@@ -25,6 +25,9 @@ class AnimationParser:
 
         if fcurve.data_path == 'rotation_euler':
             items = "xzyw"
+
+        if fcurve.data_path == 'scale':
+            items = "xzyw"
         
         index = fcurve.array_index
         if 0 <= index and index <= 4:
@@ -52,7 +55,7 @@ class AnimationParser:
             if invert:
                 parsed_keyframe["c"]["y"] *= -1
                 parsed_keyframe["h_l"]["y"] *= -1
-                parsed_keyframe["h_l"]["y"] *= -1
+                parsed_keyframe["h_r"]["y"] *= -1
 
             parsed_keyframes.append(parsed_keyframe)
                 
