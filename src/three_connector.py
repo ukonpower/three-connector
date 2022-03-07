@@ -1,8 +1,15 @@
-from this import d
 import bpy
+from bpy_extras.io_utils import ImportHelper
+from bpy.types import (Operator)
+from bpy.props import StringProperty
 
-from .ws_server import WS;
+import os
+from .ws_server import WS
 from src.animation_parser import AnimationParser
+
+class ThreeConnectorProperties(bpy.types.PropertyGroup):
+    gltf_path: bpy.props.StringProperty(name="fle path", default="./")
+    gltf_preset: bpy.props.StringProperty(name="preset", default="simple")
 
 class THREECONNECTOR_PT_Sync(bpy.types.Panel):
 
@@ -12,13 +19,76 @@ class THREECONNECTOR_PT_Sync(bpy.types.Panel):
     bl_category = "Three Connector"
 
     def draw(self, context):
-        op_cls = THREECONNECTOR_OT_Sync
-        
+        scene = context.scene
+        # sync
+        syncCls = THREECONNECTOR_OT_Sync
         layout = self.layout
-        if not op_cls.is_running():
-            layout.operator(op_cls.bl_idname, text="同期開始", icon="PLAY")
+        if not syncCls.is_running():
+            layout.operator(syncCls.bl_idname, text="同期開始", icon="PLAY")
         else:
-            layout.operator(op_cls.bl_idname, text="同期中", icon="PAUSE", depress=True)
+            layout.operator(syncCls.bl_idname, text="同期中", icon="PAUSE", depress=True)
+        layout.separator()
+
+        # glb path
+        gltfExportPathCls = THREECONNECTOR_OT_GLTFExportPath
+        gltfExportCls = THREECONNECTOR_OT_GLTFExport
+        
+        layout.label(text="glTF Export")
+        layout.prop( scene.three_connector, "gltf_preset" )
+        gltfLayoutLow = layout.row(align=True)
+        gltfLayoutLow.prop( scene.three_connector, "gltf_path" )
+        gltfLayoutLow.operator( gltfExportPathCls.bl_idname, text="", icon="FILE_FOLDER" )
+        layout.operator(gltfExportCls.bl_idname, text="Export" )
+
+class THREECONNECTOR_OT_GLTFExportPath(Operator, ImportHelper):
+    bl_idname = 'object.threeconnector_export_glb_path'
+    bl_label = 'Accept'
+    bl_options = {'PRESET', 'UNDO'}
+ 
+    filename_ext = '.glb'
+    
+    filter_glob: StringProperty(
+        default='*.glb',
+        options={'HIDDEN'}
+    )
+ 
+    def execute(self, context):
+        scene = bpy.context.scene
+        scene.three_connector.gltf_path = self.filepath
+        return {'FINISHED'}
+
+class THREECONNECTOR_OT_GLTFExport(Operator):
+    bl_idname = 'object.threeconnector_export_gltf'
+    bl_label = 'Accept'
+    
+    def execute(self, context):
+        scene = bpy.context.scene
+        filename = scene.three_connector.gltf_preset
+        filepath = scene.three_connector.gltf_path
+
+        # https://blenderartists.org/t/using-fbx-export-presets-when-exporting-from-a-script/1162914/2
+
+        preset_path = bpy.utils.preset_paths('operator/export_scene.gltf/')[0]
+        presetpath = os.path.join(preset_path, filename) 
+        if presetpath:
+            class Container(object):
+                __slots__ = ('__dict__',)
+
+            op = Container()
+            file = open(presetpath + '.py', 'r')
+
+            # storing the values from the preset on the class
+            for line in file.readlines()[3::]:
+                exec(line, globals(), locals())
+
+            # set gltf path
+            op.filepath = filepath
+            
+            # pass class dictionary to the operator
+            kwargs = op.__dict__
+            bpy.ops.export_scene.gltf(**kwargs)
+        
+        return {'FINISHED'}
 
 class THREECONNECTOR_OT_Sync(bpy.types.Operator):
 
@@ -105,3 +175,9 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
             self.start()
 
         return {'FINISHED'}
+
+def register():
+    bpy.types.Scene.three_connector = bpy.props.PointerProperty(type=ThreeConnectorProperties)
+
+def unregister():
+    del bpy.types.Scene.three_connector
