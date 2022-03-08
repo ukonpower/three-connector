@@ -24,9 +24,9 @@ class THREECONNECTOR_PT_Sync(bpy.types.Panel):
         syncCls = THREECONNECTOR_OT_Sync
         layout = self.layout
         if not syncCls.is_running():
-            layout.operator(syncCls.bl_idname, text="同期開始", icon="PLAY")
+            layout.operator(syncCls.bl_idname, text="Sync", icon="PLAY")
         else:
-            layout.operator(syncCls.bl_idname, text="同期中", icon="PAUSE", depress=True)
+            layout.operator(syncCls.bl_idname, text="Syncing...", icon="PAUSE", depress=True)
         layout.separator()
 
         # glb path

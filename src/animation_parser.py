@@ -113,10 +113,17 @@ class AnimationParser:
                 "actions": []
             }
 
-            animation_data = object.animation_data
+            object_animation_data = object.animation_data
             
-            if animation_data:
-                object_data["actions"].append( animation_data.action.name_full )
+            if object_animation_data:
+                object_data["actions"].append( object_animation_data.action.name_full )
+
+            for matSlot in object.material_slots:
+                mat_animation_data = matSlot.material.node_tree.animation_data
+                if object_animation_data:
+                    object_data["actions"].append( mat_animation_data.action.name_full )
+
+            if len(object_data["actions"])  > 0:
                 parsed_objects.append(object_data)
 
         return parsed_objects
