@@ -6,7 +6,7 @@ bl_info = {
     "version" : (0, 0, 1),
     "location" : "",
     "warning" : "",
-    "category" : "Generic"
+    "category" : "Testing"
 }
 
 from . import auto_load

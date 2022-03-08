@@ -5,7 +5,7 @@ from bpy.props import StringProperty
 
 import os
 from .ws_server import WS
-from src.animation_parser import AnimationParser
+from .animation_parser import AnimationParser
 
 class ThreeConnectorProperties(bpy.types.PropertyGroup):
     gltf_path: bpy.props.StringProperty(name="fle path", default="./")
