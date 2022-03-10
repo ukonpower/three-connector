@@ -1,5 +1,6 @@
+from tokenize import String
 import bpy
-
+import re
 class AnimationParser:
 
     # parse ----------------------
@@ -17,7 +18,10 @@ class AnimationParser:
             
         return parsed_vector
 
-    def get_fcurve_name(self, fcurve: bpy.types.FCurve ):
+    def get_fcurve_coord(self, fcurve: bpy.types.FCurve ):
+
+        # coord
+        
         items = "xyzw"
 
         if fcurve.data_path == 'location':
@@ -28,12 +32,12 @@ class AnimationParser:
 
         if fcurve.data_path == 'scale':
             items = "xzyw"
-        
+
         index = fcurve.array_index
         if 0 <= index and index <= 4:
-            return fcurve.data_path + '_' + items[fcurve.array_index]
+            return items[fcurve.array_index]
         else:
-            return fcurve.data_path
+            return None
 
     #  keyframe
 
@@ -65,11 +69,17 @@ class AnimationParser:
     
     def parse_fcurve(self, fcurve: bpy.types.FCurve ):
 
-        curveName = self.get_fcurve_name(fcurve)
-        frames = self.parse_keyframe_list(fcurve.keyframe_points, curveName.find( 'location_z' ) > -1 or curveName.find( 'rotation_euler_z' ) > -1)
-        
+        curve_name = fcurve.data_path
+
+        # set coord
+        coord = self.get_fcurve_coord(fcurve)
+        if coord:
+            curve_name += '_' + curve_name
+            
+        frames = self.parse_keyframe_list(fcurve.keyframe_points, curve_name.find( 'location_z' ) > -1 or curve_name.find( 'rotation_euler_z' ) > -1)
+
         curve_parsed = {
-            "name": curveName,
+            "name": curve_name,
             "frames": frames
         }
 
@@ -91,18 +101,75 @@ class AnimationParser:
         }
         return action_parsed
 
+    def parse_action_object(self, object: bpy.types.Object, action: bpy.types.Action ):
+        action_parsed = {
+            "name": action.name_full,
+            "curves": self.parse_fcurves_list(action.fcurves)
+        }
+        return action_parsed
 
-    def parse_action_list(self, actions: list[bpy.types.Action] ):
-        parsed_actions = []
-        for action in actions:
-            parsed_action = self.parse_action(action)
-            parsed_actions.append(parsed_action)
+    def get_node_name(self, node: String):
+        node_name_match = re.search(r'(?<=nodes\[\").*?(?=\"\])', node)
+        if node_name_match:
+            return node_name_match.group()
+        return None
 
-        return parsed_actions
+    def parse_action_material(self, material: bpy.types.Material, action: bpy.types.Action ):
+
+        action_name = material.name
+
+        parsed_fcurves = []
+        
+        for fcurve in action.fcurves:
+
+            curve_name = ""
+
+            # node name?
+            node_name = self.get_node_name(fcurve.data_path)
+
+            node = material.node_tree.nodes[node_name]
+
+            print( fcurve.data_path )
+            if hasattr(node, 'inputs' ):
+                if len(node.inputs) > 0:
+                    print( node.inputs[0] )
+            
+
+            if node_name:
+                curve_name = node_name
+            
+            # set coord
+            coord = self.get_fcurve_coord(fcurve)
+            if coord:
+                curve_name += '_' + curve_name
+
+            frames = self.parse_keyframe_list(fcurve.keyframe_points, False )
+
+            curve_parsed = {
+                "name": curve_name,
+                "frames": frames
+            }
+
+            parsed_fcurves.append(curve_parsed)
+        
+        action_parsed = {
+            "name": action_name,
+            "curves": parsed_fcurves
+        }
+        return action_parsed
+
+
+    # def parse_action_list(self, actions: list[bpy.types.Action] ):
+    #     parsed_actions = []
+    #     for action in actions:
+    #         parsed_action = self.parse_action(action)
+    #         parsed_actions.append(parsed_action)
+
+    #     return parsed_actions
 
     #  Objects ----------------------
 
-    def paser_object_list(self, objects: list[bpy.types.Object]):
+    def parse_object_list(self, objects: list[bpy.types.Object]):
         objects = bpy.data.objects
 
         parsed_objects = []
@@ -128,11 +195,34 @@ class AnimationParser:
 
         return parsed_objects
 
+    def get_actions(self):
+        actions = []
+        
+        # object action
+
+        for object in bpy.data.objects:
+            object_animation_data = object.animation_data
+            
+            if object_animation_data:
+                actions.append( self.parse_action_object( object, object_animation_data.action ) )
+
+        for mat in bpy.data.materials:
+            if mat.node_tree:
+                mat_animation_data = mat.node_tree.animation_data
+
+                if mat_animation_data:
+                    actions.append( self.parse_action_material( mat, mat_animation_data.action ) )
+        
+        # material action
+        return actions
+
     #  API ----------------------
 
     def get_animation_date(self):
+        parsed_actions = self.get_actions()
+
         animation_data = {
-            "actions": self.parse_action_list(bpy.data.actions),
-            "objects": self.paser_object_list(bpy.data.objects)
+            "actions": parsed_actions,
+            "objects": self.parse_object_list(bpy.data.objects)
         }
         return animation_data
