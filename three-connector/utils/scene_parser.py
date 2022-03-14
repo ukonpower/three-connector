@@ -1,7 +1,8 @@
 from tokenize import String
 import bpy
 import re
-class AnimationParser:
+
+class SceneParser:
 
     # parse ----------------------
 
