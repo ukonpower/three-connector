@@ -2,6 +2,7 @@ import bpy
 from bpy_extras.io_utils import ImportHelper
 from bpy.types import (Operator)
 from bpy.props import StringProperty
+from bpy.app.handlers import persistent
 
 import os
 
@@ -55,12 +56,13 @@ class THREECONNECTOR_OT_ExportGLTF(Operator):
         self.export()
         return {'FINISHED'}
 
+    @persistent
     def on_save(cls, scene: bpy.types.Scene):
         cls = THREECONNECTOR_OT_ExportGLTF
         scene = bpy.context.scene
         if scene.three_connector.export_gltf_export_on_save:
             cls.export()
-
+            
     def register():
         cls = THREECONNECTOR_OT_ExportGLTF
         bpy.app.handlers.save_post.append(cls.on_save)
