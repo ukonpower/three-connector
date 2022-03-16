@@ -75,6 +75,8 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls = THREECONNECTOR_OT_Sync
         cls.ws.start_server('localhost', 3100)
         cls.running = True
+        bpy.app.handlers.frame_change_pre.append(cls.on_change_frame)
+        bpy.app.handlers.save_pre.append(cls.on_save)
         
             
     def stop(self):
