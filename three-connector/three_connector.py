@@ -1,17 +1,17 @@
 import bpy
 
+# properties
+
+from .properties import ThreeConnectorProperties
+
 # sync
+
 from .operators.sync import (THREECONNECTOR_OT_Sync)
 
 # exports
 
 from .operators.export_gltf import (THREECONNECTOR_OT_ExportGLTF, THREECONNECTOR_OT_ExportGLTFPath)
 from .operators.export_json import (THREECONNECTOR_OT_ExportJson, THREECONNECTOR_OT_ExportJsonPath)
-
-class ThreeConnectorProperties(bpy.types.PropertyGroup):
-    export_gltf_path: bpy.props.StringProperty(name="path", default="./")
-    export_gltf_preset: bpy.props.StringProperty(name="preset", default="simple")
-    export_json_path: bpy.props.StringProperty(name="path", default="./")
 
 class THREECONNECTOR_PT_Controls(bpy.types.Panel):
 
@@ -36,13 +36,15 @@ class THREECONNECTOR_PT_Controls(bpy.types.Panel):
         exportGltfCls = THREECONNECTOR_OT_ExportGLTF
         
         layout.label(text="glTF")
-        layout.prop( scene.three_connector, "export_gltf_preset" )
+        layout.prop(scene.three_connector,"export_gltf_preset_list", text="preset")
+
         gltfLayoutLow = layout.row(align=True)
         gltfLayoutLow.prop( scene.three_connector, "export_gltf_path" )
         gltfLayoutLow.operator( exportGltfPathCls.bl_idname, text="", icon="FILE_FOLDER" )
         layout.operator(exportGltfCls.bl_idname, text="Export glTF (glb)" )
 
         # json
+        
         exportJsonPathCls = THREECONNECTOR_OT_ExportJsonPath
         exportJsonCls = THREECONNECTOR_OT_ExportJson
         
