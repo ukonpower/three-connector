@@ -28,8 +28,16 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         print('unregister')
         cls.ws.stop_server()
         cls.running = False
-        bpy.app.handlers.frame_change_post.append(cls.on_change_frame)
-        bpy.app.handlers.save_pre.append(cls.on_save)
+
+        try:
+            bpy.app.handlers.frame_change_pre.remove(cls.on_change_frame)
+        except ValueError:
+            pass
+        
+        try:
+            bpy.app.handlers.save_post.remove(cls.on_save)
+        except ValueError:
+            pass
 
     @classmethod
     def get_frame(cls):
@@ -74,8 +82,15 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls.ws.stop_server()
         cls.running = False
         
-        bpy.app.handlers.frame_change_post.append(cls.on_change_frame)
-        bpy.app.handlers.save_pre.append(cls.on_save)
+        try:
+            bpy.app.handlers.frame_change_pre.remove(cls.on_change_frame)
+        except ValueError:
+            pass
+        
+        try:
+            bpy.app.handlers.save_post.remove(cls.on_save)
+        except ValueError:
+            pass
         
 
     def execute(self, context: bpy.types.Context):

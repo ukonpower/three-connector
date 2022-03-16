@@ -28,7 +28,6 @@ class THREECONNECTOR_OT_ExportGLTF(Operator):
     
     @classmethod
     def export(self):
-        print( 'aaa')
         scene = bpy.context.scene
         preset_name = scene.three_connector.export_gltf_preset_list
 
@@ -62,13 +61,15 @@ class THREECONNECTOR_OT_ExportGLTF(Operator):
         if scene.three_connector.export_gltf_export_on_save:
             cls.export()
 
-
     def register():
         cls = THREECONNECTOR_OT_ExportGLTF
         bpy.app.handlers.save_post.append(cls.on_save)
-        print( len(bpy.app.handlers.save_post))
 
     def unregister():
         cls = THREECONNECTOR_OT_ExportGLTF
-        bpy.app.handlers.save_post.remove(cls.on_save)
+
+        try:
+            bpy.app.handlers.save_post.remove(cls.on_save)
+        except ValueError:
+            pass
 
