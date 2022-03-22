@@ -56,7 +56,7 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     def on_change_frame(cls, scene: bpy.types.Scene, any ):
         frame_data = cls.get_frame()
         if frame_data["current"] != cls.sended_frame:
-            cls.ws.broadcast("sync/frame", frame_data)
+            cls.ws.broadcast("sync/timeline", frame_data)
             cls.sended_frame = frame_data["current"]
 
     @classmethod
@@ -68,7 +68,7 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
     async def on_connect(cls, websocket):
         frame_data = cls.get_frame()
         animation_data = cls.get_animation()
-        await cls.ws.send(websocket, "sync/frame", frame_data)
+        await cls.ws.send(websocket, "sync/timeline", frame_data)
         await cls.ws.send(websocket, "sync/scene", animation_data)
         
     def start(self):
