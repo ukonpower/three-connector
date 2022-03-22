@@ -20,4 +20,5 @@ class ThreeConnectorProperties(bpy.types.PropertyGroup):
         description="gltf export preset",
         items=get_gltf_presets,
     )
+    export_gltf_export_on_save: bpy.props.BoolProperty(name="export on save", default=False)
     export_json_path: bpy.props.StringProperty(name="path", default="./")

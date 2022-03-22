@@ -36,6 +36,7 @@ class THREECONNECTOR_PT_Controls(bpy.types.Panel):
         exportGltfCls = THREECONNECTOR_OT_ExportGLTF
         
         layout.label(text="glTF")
+        layout.prop(scene.three_connector,"export_gltf_export_on_save", text="export on save")
         layout.prop(scene.three_connector,"export_gltf_preset_list", text="preset")
 
         gltfLayoutLow = layout.row(align=True)
