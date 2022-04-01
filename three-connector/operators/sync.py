@@ -72,8 +72,9 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         await cls.ws.send(websocket, "sync/scene", animation_data)
         
     def start(self):
+        scene = bpy.context.scene
         cls = THREECONNECTOR_OT_Sync
-        cls.ws.start_server('localhost', 3100)
+        cls.ws.start_server('localhost', scene.three_connector.sync_port)
         cls.running = True
         bpy.app.handlers.frame_change_pre.append(cls.on_change_frame)
         bpy.app.handlers.save_pre.append(cls.on_save)
