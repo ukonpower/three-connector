@@ -25,10 +25,15 @@ class THREECONNECTOR_PT_Controls(bpy.types.Panel):
         # sync
         syncCls = THREECONNECTOR_OT_Sync
         layout = self.layout
-        if not syncCls.is_running():
-            layout.operator(syncCls.bl_idname, text="Sync", icon="PLAY")
-        else:
+        layout.label(text="Sync")
+        col = layout.column()
+        col.prop(scene.three_connector,"sync_port", text="port")
+        if syncCls.is_running():
+            col.enabled = False
             layout.operator(syncCls.bl_idname, text="Syncing...", icon="PAUSE", depress=True)
+        else:
+            col.enabled = True
+            layout.operator(syncCls.bl_idname, text="Sync", icon="PLAY")
         layout.separator()
 
         # gltf
