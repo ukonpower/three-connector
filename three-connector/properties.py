@@ -4,7 +4,12 @@ import bpy
 def get_gltf_presets(scene, context):
     items = []
 
-    preset_path = bpy.utils.preset_paths('operator/export_scene.gltf/')[0]
+    preset_path_list = bpy.utils.preset_paths('operator/export_scene.gltf/')
+
+    if(len(preset_path_list) <= 0):
+        return []
+    
+    preset_path = preset_path_list[0]
     file_list = os.listdir(preset_path)
     
     for file in file_list:
