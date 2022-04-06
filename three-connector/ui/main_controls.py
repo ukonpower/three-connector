@@ -1,19 +1,15 @@
 import bpy
 
-# properties
-
-from .properties import ThreeConnectorProperties
-
 # sync
 
-from .operators.sync import (THREECONNECTOR_OT_Sync)
+from ..operators.sync import (THREECONNECTOR_OT_Sync)
 
 # exports
 
-from .operators.export_gltf import (THREECONNECTOR_OT_ExportGLTF, THREECONNECTOR_OT_ExportGLTFPath)
-from .operators.export_json import (THREECONNECTOR_OT_ExportJson, THREECONNECTOR_OT_ExportJsonPath)
+from ..operators.export_gltf import (THREECONNECTOR_OT_ExportGLTF, THREECONNECTOR_OT_ExportGLTFPath)
+from ..operators.export_json import (THREECONNECTOR_OT_ExportJson, THREECONNECTOR_OT_ExportJsonPath)
 
-class THREECONNECTOR_PT_Controls(bpy.types.Panel):
+class THREECONNECTOR_PT_MainControls(bpy.types.Panel):
 
     bl_label = "Three Connector"
     bl_space_type = 'VIEW_3D'
@@ -59,9 +55,3 @@ class THREECONNECTOR_PT_Controls(bpy.types.Panel):
         gltfLayoutLow.prop( scene.three_connector, "export_json_path" )
         gltfLayoutLow.operator( exportJsonPathCls.bl_idname, text="", icon="FILE_FOLDER" )
         layout.operator(exportJsonCls.bl_idname, text="Export json" )
-
-def register():
-    bpy.types.Scene.three_connector = bpy.props.PointerProperty(type=ThreeConnectorProperties)
-
-def unregister():
-    del bpy.types.Scene.three_connector
