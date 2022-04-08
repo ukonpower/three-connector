@@ -3,13 +3,21 @@ import bpy;
 class FCurveUpdator:
 
 	@classmethod
-	def create_prop(self, curve: bpy.types.FCurve):
-		_
-		# if( hasattr(curve, 'accessor') ):
-		# 	curve.accessor = bpy.props.StringProperty(name=curve.data_path, default=curve.data_path)
+	def update(cls):
+		for action in bpy.data.actions:
+			for fcurve in action.fcurves:
+				for curveData in bpy.context.scene.three_connector.fcurve_list:
+					if( curveData.name == fcurve.data_path ):
+						return
+				item = bpy.context.scene.three_connector.fcurve_list.add()
+				item.name = str(fcurve.data_path)
+				item.value = ""
+				print(fcurve.data_path)
 
 	@classmethod
-	def update():
-		curves = bpy.data.curves
-		for curve in curves:
-			FCurveUpdator.create_prop(curve)
+	def register(cls):
+		print('')
+		
+	@classmethod
+	def unregister(cls):
+		print('')

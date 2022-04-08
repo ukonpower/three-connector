@@ -18,6 +18,9 @@ def get_gltf_presets(scene, context):
 
     return items
 
+class ThreeConnectorFCurveData(bpy.types.PropertyGroup):
+    value: bpy.props.StringProperty(default='_')
+
 class ThreeConnectorProperties(bpy.types.PropertyGroup):
     sync_port: bpy.props.IntProperty(name="port", default=3100)
     export_gltf_path: bpy.props.StringProperty(name="path", default="./")
@@ -28,3 +31,10 @@ class ThreeConnectorProperties(bpy.types.PropertyGroup):
     )
     export_gltf_export_on_save: bpy.props.BoolProperty(name="export on save", default=False)
     export_json_path: bpy.props.StringProperty(name="path", default="./")
+    fcurve_list: bpy.props.CollectionProperty(type=ThreeConnectorFCurveData, name="fcurve")
+
+    def register():
+        bpy.types.Scene.three_connector = bpy.props.PointerProperty(type=ThreeConnectorProperties)
+
+    def unregister():
+        del bpy.types.Scene.three_connector

@@ -1,3 +1,4 @@
+from cgitb import text
 import time
 import bpy
 
@@ -17,8 +18,7 @@ class THREECONNECTOR_PT_FCurve(bpy.types.Panel):
         layout = self.layout
         layout.label(text="Accessor")
 
-        fcurves = bpy.context.selected_editable_fcurves
-
-        for fcurve in fcurves:
-            fcurve.id_data
-            layout.prop(fcurve, "accessor", text="name")
+        for curve in bpy.context.selected_editable_fcurves:
+            for curveData in bpy.context.scene.three_connector.fcurve_list:
+                if( curveData.name == curve.data_path ):
+                    layout.prop(curveData, "value", text=curve.data_path)
