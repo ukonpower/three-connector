@@ -17,7 +17,7 @@ class THREECONNECTOR_PT_FCurve(bpy.types.Panel):
 
         for fcurve in bpy.context.selected_editable_fcurves:
             for curveData in bpy.context.scene.three_connector.fcurve_list:
-                if( curveData.name == FCurveManager.getFCurveId(fcurve) ):
+                if( curveData.name == FCurveManager.getFCurveId(fcurve, True) ):
                     layout.label(text=curveData.name)
                     layout.prop(curveData, 'accessor', text='accessor')
                     layout.prop(curveData, 'axis', text='axis')

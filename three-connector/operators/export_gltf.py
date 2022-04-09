@@ -56,22 +56,9 @@ class THREECONNECTOR_OT_ExportGLTF(Operator):
         self.export()
         return {'FINISHED'}
 
+    @classmethod
     @persistent
-    def on_save(cls, scene: bpy.types.Scene):
-        cls = THREECONNECTOR_OT_ExportGLTF
+    def on_save(cls = None, scene: bpy.types.Scene = None):
         scene = bpy.context.scene
         if scene.three_connector.export_gltf_export_on_save:
             cls.export()
-            
-    def register():
-        cls = THREECONNECTOR_OT_ExportGLTF
-        bpy.app.handlers.save_post.append(cls.on_save)
-
-    def unregister():
-        cls = THREECONNECTOR_OT_ExportGLTF
-
-        try:
-            bpy.app.handlers.save_post.remove(cls.on_save)
-        except ValueError:
-            pass
-
