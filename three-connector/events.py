@@ -1,8 +1,8 @@
 import bpy;
 from bpy.app.handlers import persistent
 
-from ..managers.fcurve import FCurveManager
-from ..operators.export_gltf import THREECONNECTOR_OT_ExportGLTF
+from .managers.fcurve import FCurveManager
+from .operators.export_gltf import THREECONNECTOR_OT_ExportGLTF
 
 @persistent
 def on_load(scene = None, context = None):

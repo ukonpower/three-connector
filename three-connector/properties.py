@@ -1,7 +1,7 @@
 import os
 import bpy
 
-from .managers.fcurve import ThreeConnectorFCurveData
+from .managers.fcurve import ThreeConnectorFCurveProperty
 
 def get_gltf_presets(scene, context):
     items = []
@@ -29,12 +29,11 @@ class ThreeConnectorProperties(bpy.types.PropertyGroup):
         items=get_gltf_presets,
     )
     export_gltf_export_on_save: bpy.props.BoolProperty(name="export on save", default=False)
-    export_json_path: bpy.props.StringProperty(name="path", default="./")
-    fcurve_list: bpy.props.CollectionProperty(type=ThreeConnectorFCurveData, name="fcurve")
+    export_scene_data_path: bpy.props.StringProperty(name="path", default="./")
+    fcurve_list: bpy.props.CollectionProperty(type=ThreeConnectorFCurveProperty, name="fcurve")
 
     def register():
         bpy.types.Scene.three_connector = bpy.props.PointerProperty(type=ThreeConnectorProperties)
-        print( bpy.context)
 
     def unregister():
         bpy.context.scene.three_connector.fcurve_list.clear()

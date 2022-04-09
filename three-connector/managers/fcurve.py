@@ -1,7 +1,7 @@
 import bpy;
 import re;
 
-class ThreeConnectorFCurveData(bpy.types.PropertyGroup):
+class ThreeConnectorFCurveProperty(bpy.types.PropertyGroup):
 	index: bpy.props.IntProperty(default=0)
 	accessor: bpy.props.StringProperty(default='')
 	axis: bpy.props.EnumProperty(
