@@ -1,6 +1,8 @@
 import os
 import bpy
 
+from .managers.fcurve import ThreeConnectorFCurveData
+
 def get_gltf_presets(scene, context):
     items = []
 
@@ -17,9 +19,6 @@ def get_gltf_presets(scene, context):
             items.append(( os.path.join(preset_path, file), file.replace('.py', ''), file))
 
     return items
-
-class ThreeConnectorFCurveData(bpy.types.PropertyGroup):
-    value: bpy.props.StringProperty(default='_')
 
 class ThreeConnectorProperties(bpy.types.PropertyGroup):
     sync_port: bpy.props.IntProperty(name="port", default=3100)
