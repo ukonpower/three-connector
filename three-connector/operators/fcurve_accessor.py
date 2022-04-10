@@ -15,12 +15,12 @@ class THREECONNECTOR_OT_FCurveAccessorRename(Operator):
         return bpy.context.window_manager.invoke_props_dialog(self)
         
     def execute(self, context):
-        
         for fcurve in bpy.context.selected_editable_fcurves:
             fcurve_id = FCurveManager.getFCurveId(fcurve, True)
             for curveData in bpy.context.scene.three_connector.fcurve_list:
                 if( curveData.name == fcurve_id ):
                     curveData.accessor = self.accessor_name
-            
-        return {'FINISHED'}
 
+        bpy.context.area.tag_redraw()
+        
+        return {'FINISHED'}
