@@ -22,7 +22,7 @@ def get_gltf_presets(scene, context):
 
 class ThreeConnectorProperties(bpy.types.PropertyGroup):
     sync_port: bpy.props.IntProperty(name="port", default=3100)
-    export_gltf_path: bpy.props.StringProperty(name="path", default="./")
+    export_gltf_path: bpy.props.StringProperty(name="path", default="./" )
     export_gltf_preset_list: bpy.props.EnumProperty(
         name="preset",
         description="gltf export preset",

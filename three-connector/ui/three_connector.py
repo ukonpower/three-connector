@@ -40,9 +40,9 @@ class THREECONNECTOR_PT_MainControls(bpy.types.Panel):
         layout.prop(scene.three_connector,'export_gltf_export_on_save', text='export on save')
         layout.prop(scene.three_connector,'export_gltf_preset_list', text='preset')
 
-        gltfLayoutLow = layout.row(align=True)
-        gltfLayoutLow.prop( scene.three_connector, 'export_gltf_path' )
-        gltfLayoutLow.operator( exportGltfPathCls.bl_idname, text='', icon='FILE_FOLDER' )
+        gltf_path_low = layout.row(align=True)
+        gltf_path_low.prop( scene.three_connector, 'export_gltf_path' )
+        gltf_path_low.operator( exportGltfPathCls.bl_idname, text='', icon='FILE_FOLDER' )
         layout.operator(exportGltfCls.bl_idname, text='Export glTF (glb)' )
 
         # sceneData
@@ -51,7 +51,7 @@ class THREECONNECTOR_PT_MainControls(bpy.types.Panel):
         export_scene_data_cls = THREECONNECTOR_OT_ExportSceneData
         
         layout.label(text='Scene data')
-        gltfLayoutLow = layout.row(align=True)
-        gltfLayoutLow.prop( scene.three_connector, 'export_scene_data_path' )
-        gltfLayoutLow.operator( export_scene_data_path_cls.bl_idname, text='', icon='FILE_FOLDER' )
+        scene_data_path_low = layout.row(align=True)
+        scene_data_path_low.prop( scene.three_connector, 'export_scene_data_path' )
+        scene_data_path_low.operator( export_scene_data_path_cls.bl_idname, text='', icon='FILE_FOLDER' )
         layout.operator(export_scene_data_cls.bl_idname, text='Export scene data' )
