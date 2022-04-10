@@ -1,27 +1,6 @@
 import bpy
-from bpy_extras.io_utils import ImportHelper
 from bpy.types import (Operator)
-from bpy.props import StringProperty
 from bpy.app.handlers import persistent
-
-import os
-
-class THREECONNECTOR_OT_ExportGLTFPath(Operator, ImportHelper):
-    bl_idname = 'object.threeconnector_export_glb_path'
-    bl_label = 'Accept'
-    bl_options = {'PRESET', 'UNDO'}
- 
-    filename_ext = '.glb'
-
-    filter_glob: StringProperty(
-        default='*.glb',
-        options={'HIDDEN'}
-    )
- 
-    def execute(self, context):
-        scene = bpy.context.scene
-        scene.three_connector.export_gltf_path = self.filepath
-        return {'FINISHED'}
 
 class THREECONNECTOR_OT_ExportGLTF(Operator):
     bl_idname = 'object.threeconnector_export_gltf'

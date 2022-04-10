@@ -22,14 +22,14 @@ def get_gltf_presets(scene, context):
 
 class ThreeConnectorProperties(bpy.types.PropertyGroup):
     sync_port: bpy.props.IntProperty(name="port", default=3100)
-    export_gltf_path: bpy.props.StringProperty(name="path", default="./" )
+    export_gltf_path: bpy.props.StringProperty(name="path", default="./", subtype='FILE_PATH' )
     export_gltf_preset_list: bpy.props.EnumProperty(
         name="preset",
         description="gltf export preset",
         items=get_gltf_presets,
     )
     export_gltf_export_on_save: bpy.props.BoolProperty(name="export on save", default=False)
-    export_scene_data_path: bpy.props.StringProperty(name="path", default="./")
+    export_scene_data_path: bpy.props.StringProperty(name="path", default="./", subtype='FILE_PATH')
     fcurve_list: bpy.props.CollectionProperty(type=ThreeConnectorFCurveProperty, name="fcurve")
 
     def register():
