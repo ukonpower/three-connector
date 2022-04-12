@@ -68,7 +68,7 @@ class SceneParser:
 
         parsed_fcurve = {
             "name": "none",
-            "axis": "none",
+            "axis": "scaler",
             "keyframes": None
         }
 
@@ -94,7 +94,7 @@ class SceneParser:
             fcurveId = FCurveManager.getFCurveId(fcurve, True)
             for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
                 if( fcurve_prop.name == fcurveId):
-                    fcurve_accessor_list.append(fcurve_prop.name)
+                    fcurve_accessor_list.append(FCurveManager.getFCurveId(fcurve))
                 
         return {
             "name": action.name_full,
