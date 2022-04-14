@@ -1,3 +1,4 @@
+from ast import Str
 import bpy
 
 from ..managers.fcurve import FCurveManager
@@ -19,24 +20,18 @@ class SceneParser:
             
         return parsed_vector
 
-    def get_fcurve_coord(self, fcurve: bpy.types.FCurve ):
+    def get_fcurve_axis(self, fcurveId: str, axis: str):
 
-        items = "xyzw"
+        axisList = 'xyzw'
 
-        if fcurve.data_path == 'location':
-            items = "xzyw"
+        if( not fcurveId.find( 'Shader NodetreeAction' ) > -1 ):
+            axisList = 'xzyw'
 
-        if fcurve.data_path == 'rotation_euler':
-            items = "xzyw"
+        axisIndex = axisList.find(axis)
 
-        if fcurve.data_path == 'scale':
-            items = "xzyw"
+        print( 'xyzw'[axisIndex] )
 
-        index = fcurve.array_index
-        if 0 <= index and index <= 4:
-            return items[fcurve.array_index]
-        else:
-            return None
+        return 'xyzw'[axisIndex]
 
     def parse_keyframe(self, keyframe: bpy.types.Keyframe):
         parsed_keyframe = {
@@ -74,13 +69,13 @@ class SceneParser:
 
         fcurveId = FCurveManager.getFCurveId(fcurve, True)
 
-        invert = fcurveId.find( 'location_z' ) > -1 or fcurveId.find( 'rotation_euler_z' ) > -1
+        invert = fcurveId.find( 'location_y' ) > -1 or fcurveId.find( 'rotation_euler_y' ) > -1
         parsed_fcurve['keyframes'] = self.parse_keyframe_list(fcurve.keyframe_points, invert)
-        
+
         for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
             if( fcurve_prop.name == fcurveId):
                 parsed_fcurve["name"] = fcurve_prop.accessor
-                parsed_fcurve["axis"] = fcurve_prop.axis
+                parsed_fcurve["axis"] = self.get_fcurve_axis( fcurveId, fcurve_prop.axis )
                 
         return parsed_fcurve
     
