@@ -36,5 +36,4 @@ class ThreeConnectorProperties(bpy.types.PropertyGroup):
         bpy.types.Scene.three_connector = bpy.props.PointerProperty(type=ThreeConnectorProperties)
 
     def unregister():
-        bpy.context.scene.three_connector.fcurve_list.clear()
         del bpy.types.Scene.three_connector
