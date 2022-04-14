@@ -78,7 +78,6 @@ class THREECONNECTOR_OT_Sync(bpy.types.Operator):
         cls.running = True
         bpy.app.handlers.frame_change_pre.append(cls.on_change_frame)
         bpy.app.handlers.save_pre.append(cls.on_save)
-        
             
     def stop(self):
         cls = THREECONNECTOR_OT_Sync

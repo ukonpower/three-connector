@@ -1,10 +1,11 @@
-from tokenize import String
+from ast import Str
 import bpy
-import re
+
+from ..managers.fcurve import FCurveManager
 
 class SceneParser:
 
-    # parse ----------------------
+    # Parse Keyframe ----------------------
 
     def parse_vector(self, vector):
         parsed_vector = {}
@@ -19,28 +20,18 @@ class SceneParser:
             
         return parsed_vector
 
-    def get_fcurve_coord(self, fcurve: bpy.types.FCurve ):
+    def get_fcurve_axis(self, fcurveId: str, axis: str):
 
-        # coord
-        
-        items = "xyzw"
+        axisList = 'xyzw'
 
-        if fcurve.data_path == 'location':
-            items = "xzyw"
+        if( not fcurveId.find( 'Shader NodetreeAction' ) > -1 ):
+            axisList = 'xzyw'
 
-        if fcurve.data_path == 'rotation_euler':
-            items = "xzyw"
+        axisIndex = axisList.find(axis)
 
-        if fcurve.data_path == 'scale':
-            items = "xzyw"
+        print( 'xyzw'[axisIndex] )
 
-        index = fcurve.array_index
-        if 0 <= index and index <= 4:
-            return items[fcurve.array_index]
-        else:
-            return None
-
-    #  keyframe
+        return 'xyzw'[axisIndex]
 
     def parse_keyframe(self, keyframe: bpy.types.Keyframe):
         parsed_keyframe = {
@@ -66,113 +57,48 @@ class SceneParser:
                 
         return parsed_keyframes
 
-    #  action - object
+    # Parse F-Curve ----------------------
 
-    def parse_action_object(self, object: bpy.types.Object, action: bpy.types.Action ):
+    def parse_fcurve(self, fcurve: bpy.types.FCurve ):
 
-        parsed_fcurves = []
+        parsed_fcurve = {
+            "name": "none",
+            "axis": "scaler",
+            "keyframes": None
+        }
+
+        fcurveId = FCurveManager.getFCurveId(fcurve, True)
+
+        invert = fcurveId.find( 'location_y' ) > -1 or fcurveId.find( 'rotation_euler_y' ) > -1
+        parsed_fcurve['keyframes'] = self.parse_keyframe_list(fcurve.keyframe_points, invert)
+
+        for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
+            if( fcurve_prop.name == fcurveId):
+                parsed_fcurve["name"] = fcurve_prop.accessor
+                parsed_fcurve["axis"] = self.get_fcurve_axis( fcurveId, fcurve_prop.axis )
+                
+        return parsed_fcurve
+    
+    # Parse Action ----------------------
+
+    def parse_action(self, action: bpy.types.Action ):
+
+        fcurve_accessor_list = []
         
         for fcurve in action.fcurves:
-
-            curve_name = fcurve.data_path
-
-            # coord
-
-            coord = self.get_fcurve_coord(fcurve)
-            
-            if coord:
-                curve_name += '_' + coord
+            fcurveId = FCurveManager.getFCurveId(fcurve, True)
+            for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
+                if( fcurve_prop.name == fcurveId and not fcurve_prop.accessor in fcurve_accessor_list):
+                    fcurve_accessor_list.append(fcurve_prop.accessor)
                 
-            # frames
-
-            frames = self.parse_keyframe_list(fcurve.keyframe_points, curve_name.find( 'location_z' ) > -1 or curve_name.find( 'rotation_euler_z' ) > -1)
-
-            parsed_fcurves.append({
-                "name": curve_name,
-                "frames": frames
-            })
-
         return {
             "name": action.name_full,
-            "curves": parsed_fcurves
+            "fcurves": fcurve_accessor_list
         }
 
-    #  action - material
+    #  Object List ----------------------
 
-    def get_node_name_by_data_path(self, data_path: String):
-        node_name_match = re.search(r'(?<=nodes\[\").*?(?=\"\])', data_path)
-        if node_name_match:
-            return node_name_match.group()
-        return None
-
-    def get_input_index_by_datapath(self, data_path: String):
-        node_name_match = re.search(r'(?<=inputs\[).*?(?=\])', data_path)
-        if node_name_match:
-            return node_name_match.group()
-        return None
-
-    def get_output_index_by_datapath(self, data_path: String):
-        node_name_match = re.search(r'(?<=outputs\[).*?(?=\])', data_path)
-        if node_name_match:
-            return node_name_match.group()
-        return None
-
-    def parse_action_material(self, material: bpy.types.Material, action: bpy.types.Action ):
-
-        action_name = material.name
-
-        parsed_fcurves = []
-        
-        for fcurve in action.fcurves:
-
-            curve_name = ""
-
-            # node name?
-            
-            node_name = self.get_node_name_by_data_path(fcurve.data_path)
-
-            if node_name != None:
-                node = material.node_tree.nodes[node_name]
-
-                # inputs | outpus ?
-
-                input_index = self.get_input_index_by_datapath(fcurve.data_path)
-                output_index = self.get_output_index_by_datapath(fcurve.data_path)
-
-                if input_index != None:
-                    node_name += '_' + node.inputs[int(input_index)].name
-
-                elif output_index != None:
-                    node_name += '_' + node.outputs[int(output_index)].name
-
-                curve_name = node_name
-            
-            # coord
-            
-            coord = self.get_fcurve_coord(fcurve)
-
-            if coord:
-                curve_name += '_' + coord
-
-            # frames
-
-            frames = self.parse_keyframe_list(fcurve.keyframe_points, False )
-
-            parsed_fcurves.append({
-                "name": curve_name,
-                "frames": frames
-            })
-        
-        action_parsed = {
-            "name": action_name,
-            "curves": parsed_fcurves
-        }
-
-        return action_parsed
-
-    #  Objects ----------------------
-
-    def parse_object_list(self, objects: list[bpy.types.Object]):
+    def get_object_list(self):
         objects = bpy.data.objects
 
         parsed_objects = []
@@ -198,32 +124,36 @@ class SceneParser:
 
         return parsed_objects
 
-    def get_actions(self):
-        actions = []
-        
-        # object action
+    #  Action List ----------------------
 
-        for object in bpy.data.objects:
-            object_animation_data = object.animation_data
+    def get_action_list(self):
+        parsed_action_list = []
+
+        for action in bpy.data.actions:
+            parsed_action_list.append( self.parse_action(action) )
+        
+        return parsed_action_list
+
+    #  Action List ----------------------
+
+    def get_fcurve_list(self):
+        parse_fcurve_list = []
+
+        actionList: list[bpy.types.Action] = bpy.data.actions
+        for action in actionList:
             
-            if object_animation_data:
-                actions.append( self.parse_action_object( object, object_animation_data.action ) )
-
-        for mat in bpy.data.materials:
-            if mat.node_tree:
-                mat_animation_data = mat.node_tree.animation_data
-
-                if mat_animation_data:
-                    actions.append( self.parse_action_material( mat, mat_animation_data.action ) )
+            curveList: list[bpy.types.FCurve] = action.fcurves
+            for fcurve in curveList:
+                parse_fcurve_list.append( self.parse_fcurve(fcurve) )
         
-        # material action
-        return actions
-
+        return parse_fcurve_list
+    
     #  API ----------------------
 
     def get_animation_date(self):
         animation_data = {
-            "actions": self.get_actions(),
-            "objects": self.parse_object_list(bpy.data.objects)
+            "objects": self.get_object_list(),
+            "actions": self.get_action_list(),
+            "fcurves": self.get_fcurve_list(),
         }
         return animation_data
