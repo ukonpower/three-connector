@@ -29,8 +29,6 @@ class SceneParser:
 
         axisIndex = axisList.find(axis)
 
-        print( 'xyzw'[axisIndex] )
-
         return 'xyzw'[axisIndex]
 
     def parse_keyframe(self, keyframe: bpy.types.Keyframe):
@@ -116,7 +114,7 @@ class SceneParser:
 
             for matSlot in object.material_slots:
                 mat_animation_data = matSlot.material.node_tree.animation_data
-                if object_animation_data:
+                if mat_animation_data:
                     object_data["actions"].append( mat_animation_data.action.name_full )
 
             if len(object_data["actions"])  > 0:
