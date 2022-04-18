@@ -12,9 +12,9 @@ class ThreeConnectorFCurveProperty(bpy.types.PropertyGroup):
 			( "y", "Y", "" ),
 			( "z", "Z", "" ),
 			( "w", "W", "" ),
-			( "none", "None", "" )
+			( "scalar", "Scalar", "" )
 		],
-		default='none'
+		default='scalar'
 	)
 
 class FCurveManager:
