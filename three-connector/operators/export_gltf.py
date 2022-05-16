@@ -1,6 +1,38 @@
 import bpy
+from bpy_extras.io_utils import ExportHelper
 from bpy.types import (Operator)
+from bpy.props import (StringProperty, BoolProperty)
 from bpy.app.handlers import persistent
+
+import os
+
+class THREECONNECTOR_OT_ExportGLTFPath(Operator, ExportHelper):
+    bl_idname = 'object.threeconnector_export_glb_path'
+    bl_label = 'Accept'
+    bl_options = {'UNDO'}
+ 
+    filename_ext = '.glb'
+
+    filter_glob: StringProperty(
+        default='*.glb',
+        options={'HIDDEN'}
+    )
+
+    path_relative: BoolProperty(
+        name='Relative Path',
+        description='',
+        default=True
+    )
+ 
+    def execute(self, context):
+        scene = bpy.context.scene
+        path = self.filepath
+
+        if( self.path_relative ):
+            path = bpy.path.relpath(path)
+        
+        scene.three_connector.export_gltf_path = path
+        return {'FINISHED'}
 
 class THREECONNECTOR_OT_ExportGLTF(Operator):
     bl_idname = 'object.threeconnector_export_gltf'
@@ -25,7 +57,7 @@ class THREECONNECTOR_OT_ExportGLTF(Operator):
                 exec(line, globals(), locals())
 
             # set gltf path
-            op.filepath = scene.three_connector.export_gltf_path
+            op.filepath = bpy.path.abspath(scene.three_connector.export_gltf_path)
             
             # pass class dictionary to the operator
             kwargs = op.__dict__

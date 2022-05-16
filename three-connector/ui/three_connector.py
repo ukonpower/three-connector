@@ -6,8 +6,8 @@ from ..operators.sync import (THREECONNECTOR_OT_Sync)
 
 # exports
 
-from ..operators.export_gltf import (THREECONNECTOR_OT_ExportGLTF)
-from ..operators.export_scene_data import (THREECONNECTOR_OT_ExportSceneData)
+from ..operators.export_gltf import (THREECONNECTOR_OT_ExportGLTF, THREECONNECTOR_OT_ExportGLTFPath)
+from ..operators.export_scene_data import (THREECONNECTOR_OT_ExportSceneData, THREECONNECTOR_OT_ExportSceneDataPath)
 
 class THREECONNECTOR_PT_MainControls(bpy.types.Panel):
 
@@ -33,14 +33,25 @@ class THREECONNECTOR_PT_MainControls(bpy.types.Panel):
         layout.separator()
 
         # gltf
+        exportGltfPathCls = THREECONNECTOR_OT_ExportGLTFPath
+        exportGltfCls = THREECONNECTOR_OT_ExportGLTF
+        
         layout.label(text='glTF')
         layout.prop(scene.three_connector,'export_gltf_export_on_save', text='export on save')
         layout.prop(scene.three_connector,'export_gltf_preset_list', text='preset')
 
-        layout.prop( scene.three_connector, 'export_gltf_path' )
-        layout.operator(THREECONNECTOR_OT_ExportGLTF.bl_idname, text='Export glTF (glb)' )
+        gltf_path_low = layout.row(align=True)
+        gltf_path_low.prop( scene.three_connector, 'export_gltf_path' )
+        gltf_path_low.operator( exportGltfPathCls.bl_idname, text='', icon='FILE_FOLDER' )
+        layout.operator(exportGltfCls.bl_idname, text='Export glTF (glb)' )
 
         # sceneData
+        
+        export_scene_data_path_cls = THREECONNECTOR_OT_ExportSceneDataPath
+        export_scene_data_cls = THREECONNECTOR_OT_ExportSceneData
+        
         layout.label(text='Scene data')
-        layout.prop( scene.three_connector, 'export_scene_data_path' )
-        layout.operator(THREECONNECTOR_OT_ExportSceneData.bl_idname, text='Export scene data' )
+        scene_data_path_low = layout.row(align=True)
+        scene_data_path_low.prop( scene.three_connector, 'export_scene_data_path' )
+        scene_data_path_low.operator( export_scene_data_path_cls.bl_idname, text='', icon='FILE_FOLDER' )
+        layout.operator(export_scene_data_cls.bl_idname, text='Export scene data' )
