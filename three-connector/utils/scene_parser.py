@@ -63,7 +63,6 @@ class SceneParser:
     def parse_fcurve(self, fcurve: bpy.types.FCurve ):
 
         parsed_fcurve = {
-            "name": "none",
             "axis": "scaler",
             "keyframes": None
         }
@@ -75,8 +74,8 @@ class SceneParser:
 
         for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
             if( fcurve_prop.name == fcurveId):
-                parsed_fcurve["name"] = fcurve_prop.accessor
                 parsed_fcurve["axis"] = self.get_fcurve_axis( fcurveId, fcurve_prop.axis )
+                break
                 
         return parsed_fcurve
     
@@ -84,17 +83,20 @@ class SceneParser:
 
     def parse_action(self, action: bpy.types.Action ):
 
-        fcurve_accessor_list = []
+        parsed_fcurve_list = dict()
         
         for fcurve in action.fcurves:
-            fcurveId = FCurveManager.getFCurveId(fcurve, True)
             for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
-                if( fcurve_prop.name == fcurveId and not fcurve_prop.accessor in fcurve_accessor_list):
-                    fcurve_accessor_list.append(fcurve_prop.accessor)
+                fcurveId = FCurveManager.getFCurveId(fcurve, True)
+                if( fcurve_prop.name == fcurveId ):
+                    if( fcurve_prop.accessor in parsed_fcurve_list ):
+                        parsed_fcurve_list[fcurve_prop.accessor].append(self.parse_fcurve(fcurve))
+                    else:
+                        parsed_fcurve_list[fcurve_prop.accessor] = [self.parse_fcurve(fcurve)]
                 
         return {
             "name": action.name_full,
-            "fcurves": fcurve_accessor_list
+            "fcurve_groups": parsed_fcurve_list
         }
 
     #  Object List ----------------------
@@ -156,6 +158,5 @@ class SceneParser:
         animation_data = {
             "objects": self.get_object_list(),
             "actions": self.get_action_list(),
-            "fcurves": self.get_fcurve_list(),
         }
         return animation_data
