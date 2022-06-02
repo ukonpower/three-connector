@@ -67,7 +67,7 @@ class SceneParser:
             "keyframes": None
         }
 
-        fcurveId = FCurveManager.getFCurveId(fcurve, True)
+        fcurveId = FCurveManager.get_fcurve_id(fcurve, True)
 
         invert = fcurveId.find( 'location_y' ) > -1 or fcurveId.find( 'rotation_euler_y' ) > -1
         parsed_fcurve['keyframes'] = self.parse_keyframe_list(fcurve.keyframe_points, invert)
@@ -87,7 +87,7 @@ class SceneParser:
         
         for fcurve in action.fcurves:
             for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
-                fcurveId = FCurveManager.getFCurveId(fcurve, True)
+                fcurveId = FCurveManager.get_fcurve_id(fcurve, True)
                 if( fcurve_prop.name == fcurveId ):
                     if( fcurve_prop.accessor in parsed_fcurve_list ):
                         parsed_fcurve_list[fcurve_prop.accessor].append(self.parse_fcurve(fcurve))

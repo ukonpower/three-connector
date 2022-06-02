@@ -6,7 +6,8 @@ from .operators.export_gltf import THREECONNECTOR_OT_ExportGLTF
 
 @persistent
 def on_load(scene = None, context = None):
-	FCurveManager.update()
+	# FCurveManager.update()
+	print( 'load' )
 
 @persistent
 def on_save(scene = None, context = None):
@@ -14,7 +15,8 @@ def on_save(scene = None, context = None):
 
 @persistent
 def on_depsgraph_update(scene = None, context = None):
-	FCurveManager.update()
+	# FCurveManager.update()
+	print( 'depsgraph_update' )
 
 def register():
 	bpy.app.handlers.load_post.append(on_load)
