@@ -29,9 +29,10 @@ class SceneParser:
 
         axisIndex = axisList.find(axis)
 
-        print( 'xyzw'[axisIndex] )
+        if( axisIndex > -1 ):
+            return 'xyzw'[axisIndex]
 
-        return 'xyzw'[axisIndex]
+        return axis
 
     def parse_keyframe(self, keyframe: bpy.types.Keyframe):
         parsed_keyframe = {
@@ -62,20 +63,19 @@ class SceneParser:
     def parse_fcurve(self, fcurve: bpy.types.FCurve ):
 
         parsed_fcurve = {
-            "name": "none",
             "axis": "scaler",
             "keyframes": None
         }
 
-        fcurveId = FCurveManager.getFCurveId(fcurve, True)
+        fcurveId = FCurveManager.get_fcurve_id(fcurve, True)
 
         invert = fcurveId.find( 'location_y' ) > -1 or fcurveId.find( 'rotation_euler_y' ) > -1
         parsed_fcurve['keyframes'] = self.parse_keyframe_list(fcurve.keyframe_points, invert)
 
         for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
             if( fcurve_prop.name == fcurveId):
-                parsed_fcurve["name"] = fcurve_prop.accessor
                 parsed_fcurve["axis"] = self.get_fcurve_axis( fcurveId, fcurve_prop.axis )
+                break
                 
         return parsed_fcurve
     
@@ -83,17 +83,20 @@ class SceneParser:
 
     def parse_action(self, action: bpy.types.Action ):
 
-        fcurve_accessor_list = []
+        parsed_fcurve_list = dict()
         
         for fcurve in action.fcurves:
-            fcurveId = FCurveManager.getFCurveId(fcurve, True)
             for fcurve_prop in bpy.context.scene.three_connector.fcurve_list:
-                if( fcurve_prop.name == fcurveId and not fcurve_prop.accessor in fcurve_accessor_list):
-                    fcurve_accessor_list.append(fcurve_prop.accessor)
+                fcurveId = FCurveManager.get_fcurve_id(fcurve, True)
+                if( fcurve_prop.name == fcurveId ):
+                    if( fcurve_prop.accessor in parsed_fcurve_list ):
+                        parsed_fcurve_list[fcurve_prop.accessor].append(self.parse_fcurve(fcurve))
+                    else:
+                        parsed_fcurve_list[fcurve_prop.accessor] = [self.parse_fcurve(fcurve)]
                 
         return {
             "name": action.name_full,
-            "fcurves": fcurve_accessor_list
+            "fcurve_groups": parsed_fcurve_list
         }
 
     #  Object List ----------------------
@@ -112,11 +115,12 @@ class SceneParser:
             object_animation_data = object.animation_data
             
             if object_animation_data:
-                object_data["actions"].append( object_animation_data.action.name_full )
+                if object_animation_data.action != None:
+                    object_data["actions"].append( object_animation_data.action.name_full )
 
             for matSlot in object.material_slots:
                 mat_animation_data = matSlot.material.node_tree.animation_data
-                if object_animation_data:
+                if mat_animation_data:
                     object_data["actions"].append( mat_animation_data.action.name_full )
 
             if len(object_data["actions"])  > 0:
@@ -154,6 +158,5 @@ class SceneParser:
         animation_data = {
             "objects": self.get_object_list(),
             "actions": self.get_action_list(),
-            "fcurves": self.get_fcurve_list(),
         }
         return animation_data

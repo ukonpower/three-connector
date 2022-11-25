@@ -3,6 +3,7 @@ import re;
 
 class ThreeConnectorFCurveProperty(bpy.types.PropertyGroup):
 	index: bpy.props.IntProperty(default=0)
+	data_path: bpy.props.StringProperty(default='')
 	accessor: bpy.props.StringProperty(default='')
 	axis: bpy.props.EnumProperty(
 		name="axis",
@@ -12,14 +13,14 @@ class ThreeConnectorFCurveProperty(bpy.types.PropertyGroup):
 			( "y", "Y", "" ),
 			( "z", "Z", "" ),
 			( "w", "W", "" ),
-			( "none", "None", "" )
+			( "scalar", "Scalar", "" )
 		],
-		default='none'
+		default='scalar'
 	)
 
 class FCurveManager:
 	@classmethod
-	def getFCurveId(cls, fcurve: bpy.types.FCurve, axis: bool = False):
+	def get_fcurve_id(cls, fcurve: bpy.types.FCurve, axis: bool = False):
 		result = fcurve.data_path
 
 		actionName = re.search(r'(?<=\(\").*?(?=\"\))', str(fcurve.id_data))
@@ -32,26 +33,14 @@ class FCurveManager:
 			result += '_' + 'xyzw'[fcurve.array_index]
 			
 		return  result
-	
-	@classmethod
-	def update(cls):
+
+	def get_fcurve(cls, fcurve_id: str ):
 
 		actionList: list[bpy.types.Action] = bpy.data.actions
 		for action in actionList:
 			
 			curveList: list[bpy.types.FCurve] = action.fcurves
-			for fcurve in curveList:
-				
-				exist = False
-				curveId = cls.getFCurveId(fcurve, True)
-
-				for curveData in bpy.context.scene.three_connector.fcurve_list:
-					if( curveData.name == curveId ):
-						exist = True
-						break
-
-				if( not exist ):
-					item = bpy.context.scene.three_connector.fcurve_list.add()
-					item.name = curveId
-					item.accessor = cls.getFCurveId(fcurve)
-					item.axis = 'xyzw'[fcurve.array_index]
+			
+			for curve in curveList:
+				if( FCurveManager.get_fcurve_id(curve, True) == fcurve_id ):
+					return curve
